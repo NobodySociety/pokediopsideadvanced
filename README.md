@@ -11,6 +11,7 @@ This is a Rom Hack of Emerald, featuring a new region, updated dex and features,
 * Pokemon expanison
 
 * Bag Sort - Ghoulslash
+* Registered Key Item List - theXaman
 
 # Bugs Fixed:
 
