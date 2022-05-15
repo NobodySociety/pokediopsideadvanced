@@ -10,6 +10,8 @@ This is a Rom Hack of Emerald, featuring a new region, updated dex and features,
 * Item expansion
 * Pokemon expanison
 
+* Bag Sort - Ghoulslash
+
 # Bugs Fixed:
 
 # Planned Features:
