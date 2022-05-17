@@ -25,6 +25,7 @@ void ItemUseOutOfBattle_BlackWhiteFlute(u8);
 void ItemUseOutOfBattle_EvolutionStone(u8);
 void ItemUseOutOfBattle_Berry(u8);
 void ItemUseOutOfBattle_EnigmaBerry(u8);
+void ItemUseOutOfBattle_ExpShare(u8);
 void ItemUseOutOfBattle_CannotUse(u8);
 void ItemUseInBattle_PokeBall(u8);
 void ItemUseInBattle_StatIncrease(u8);
@@ -35,6 +36,8 @@ void ItemUseInBattle_EnigmaBerry(u8);
 void Task_UseDigEscapeRopeOnField(u8 taskId);
 u8 CanUseDigOrEscapeRopeOnCurMap(void);
 u8 CheckIfItemIsTMHMOrEvolutionStone(u16 itemId);
+void ItemUseOutOfBattle_SootSack(u8);
+u16 GetAshCount(void);
 
 enum {
     BALL_THROW_UNABLE_TWO_MONS,

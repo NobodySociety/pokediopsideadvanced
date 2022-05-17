@@ -38,6 +38,8 @@
 #include "window.h"
 #include "mystery_gift_menu.h"
 
+extern u8 gSoftResetFlag;
+
 /*
  * Main menu state machine
  * -----------------------
@@ -711,7 +713,7 @@ static void Task_MainMenuCheckBattery(u8 taskId)
         SetGpuReg(REG_OFFSET_BLDALPHA, 0);
         SetGpuReg(REG_OFFSET_BLDY, 7);
 
-        if (!(RtcGetErrorStatus() & RTC_ERR_FLAG_MASK))
+        if (gSoftResetFlag || !(RtcGetErrorStatus() & RTC_ERR_FLAG_MASK))
         {
             gTasks[taskId].func = Task_DisplayMainMenu;
         }
@@ -1325,6 +1327,7 @@ static void Task_NewGameBirchSpeech_WaitForSpriteFadeInWelcome(u8 taskId)
         }
         else
         {
+			gSaveBlock2Ptr->playerGender = UNDECIDED;
             InitWindows(gNewGameBirchSpeechTextWindows);
             LoadMainMenuWindowFrameTiles(0, 0xF3);
             LoadMessageBoxGfx(0, 0xFC, 0xF0);
@@ -1634,6 +1637,12 @@ static void Task_NewGameBirchSpeech_ProcessNameYesNoMenu(u8 taskId)
         case -1:
         case 1:
             PlaySE(SE_SELECT);
+			gSaveBlock2Ptr->playerGender = UNDECIDED;
+            ClearWindowTilemap(0);
+            LoadMainMenuWindowFrameTiles(0, 0xF3);
+            LoadMessageBoxGfx(0, 0xFC, 0xF0);
+            PutWindowTilemap(0);
+            CopyWindowToVram(0, 3);
             gTasks[taskId].func = Task_NewGameBirchSpeech_BoyOrGirl;
     }
 }

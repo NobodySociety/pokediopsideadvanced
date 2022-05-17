@@ -61,6 +61,15 @@ extern struct Evolution gEvolutionTable[][EVOS_PER_MON];
 
 extern const u8* const gBattleScriptsForMoveEffects[];
 
+extern u8 gMaxPartyLevel;
+
+static const u16 sBadgeFlags[8] = {
+    FLAG_BADGE01_GET, FLAG_BADGE02_GET, FLAG_BADGE03_GET, FLAG_BADGE04_GET,
+    FLAG_BADGE05_GET, FLAG_BADGE06_GET, FLAG_BADGE07_GET, FLAG_BADGE08_GET,
+};
+
+static const u16 sWhiteOutBadgeMoney[9] = { 8, 16, 24, 36, 48, 60, 80, 100, 120 };
+
 // table to avoid ugly powing on gba (courtesy of doesnt)
 // this returns (i^2.5)/4
 // the quarters cancel so no need to re-quadruple them in actual calculation
@@ -3904,9 +3913,6 @@ static void Cmd_getexp(void)
                     holdEffect = gSaveBlock1Ptr->enigmaBerry.holdEffect;
                 else
                     holdEffect = ItemId_GetHoldEffect(item);
-
-                if (holdEffect == HOLD_EFFECT_EXP_SHARE)
-                    viaExpShare++;
             }
             #if (B_SCALED_EXP >= GEN_5) && (B_SCALED_EXP != GEN_6)
                 calculatedExp = gBaseStats[gBattleMons[gBattlerFainted].species].expYield * gBattleMons[gBattlerFainted].level / 5;
@@ -3915,13 +3921,14 @@ static void Cmd_getexp(void)
             #endif
 
             #if B_SPLIT_EXP < GEN_6
-                if (viaExpShare) // at least one mon is getting exp via exp share
+                if (gSaveBlock2Ptr->expShare) // exp share is turned on
                 {
                     *exp = SAFE_DIV(calculatedExp / 2, viaSentIn);
                     if (*exp == 0)
                         *exp = 1;
 
-                    gExpShareExp = calculatedExp / 2 / viaExpShare;
+                    viaExpShare = gSaveBlock1Ptr->playerPartyCount;
+					gExpShareExp = calculatedExp / 2;
                     if (gExpShareExp == 0)
                         gExpShareExp = 1;
                 }
@@ -3954,7 +3961,7 @@ static void Cmd_getexp(void)
             else
                 holdEffect = ItemId_GetHoldEffect(item);
 
-            if (holdEffect != HOLD_EFFECT_EXP_SHARE && !(gBattleStruct->sentInPokes & 1))
+            if (!gSaveBlock2Ptr->expShare && !(gBattleStruct->sentInPokes & 1))
             {
                 *(&gBattleStruct->sentInPokes) >>= 1;
                 gBattleScripting.getexpState = 5;
@@ -3984,7 +3991,7 @@ static void Cmd_getexp(void)
                     gBattleStruct->wildVictorySong++;
                 }
 
-                if (GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_HP))
+                if (GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_HP) && !GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_IS_EGG))
                 {
                     if (gBattleStruct->sentInPokes & 1)
                         gBattleMoveDamage = *exp;
@@ -3992,7 +3999,7 @@ static void Cmd_getexp(void)
                         gBattleMoveDamage = 0;
 
                     // only give exp share bonus in later gens if the mon wasn't sent out
-                    if ((holdEffect == HOLD_EFFECT_EXP_SHARE) && ((gBattleMoveDamage == 0) || (B_SPLIT_EXP < GEN_6)))
+                    if ((gSaveBlock2Ptr->expShare) && ((gBattleMoveDamage == 0) || (B_SPLIT_EXP < GEN_6)))
                         gBattleMoveDamage += gExpShareExp;
                     if (holdEffect == HOLD_EFFECT_LUCKY_EGG)
                         gBattleMoveDamage = (gBattleMoveDamage * 150) / 100;
@@ -6613,32 +6620,24 @@ static void Cmd_yesnoboxlearnmove(void)
             else
             {
                 u16 moveId = GetMonData(&gPlayerParty[gBattleStruct->expGetterMonId], MON_DATA_MOVE1 + movePosition);
-                if (IsHMMove2(moveId))
-                {
-                    PrepareStringBattle(STRINGID_HMMOVESCANTBEFORGOTTEN, gActiveBattler);
-                    gBattleScripting.learnMoveState = 6;
-                }
-                else
-                {
-                    gBattlescriptCurrInstr = T1_READ_PTR(gBattlescriptCurrInstr + 1);
+				gBattlescriptCurrInstr = T1_READ_PTR(gBattlescriptCurrInstr + 1);
 
-                    PREPARE_MOVE_BUFFER(gBattleTextBuff2, moveId)
+				PREPARE_MOVE_BUFFER(gBattleTextBuff2, moveId)
 
-                    RemoveMonPPBonus(&gPlayerParty[gBattleStruct->expGetterMonId], movePosition);
-                    SetMonMoveSlot(&gPlayerParty[gBattleStruct->expGetterMonId], gMoveToLearn, movePosition);
+				RemoveMonPPBonus(&gPlayerParty[gBattleStruct->expGetterMonId], movePosition);
+				SetMonMoveSlot(&gPlayerParty[gBattleStruct->expGetterMonId], gMoveToLearn, movePosition);
 
-                    if (gBattlerPartyIndexes[0] == gBattleStruct->expGetterMonId && MOVE_IS_PERMANENT(0, movePosition))
-                    {
-                        RemoveBattleMonPPBonus(&gBattleMons[0], movePosition);
-                        SetBattleMonMoveSlot(&gBattleMons[0], gMoveToLearn, movePosition);
-                    }
-                    if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE
-                        && gBattlerPartyIndexes[2] == gBattleStruct->expGetterMonId
-                        && MOVE_IS_PERMANENT(2, movePosition))
-                    {
-                        RemoveBattleMonPPBonus(&gBattleMons[2], movePosition);
-                        SetBattleMonMoveSlot(&gBattleMons[2], gMoveToLearn, movePosition);
-                    }
+				if (gBattlerPartyIndexes[0] == gBattleStruct->expGetterMonId && MOVE_IS_PERMANENT(0, movePosition))
+				{
+					RemoveBattleMonPPBonus(&gBattleMons[0], movePosition);
+					SetBattleMonMoveSlot(&gBattleMons[0], gMoveToLearn, movePosition);
+				}
+				if (gBattleTypeFlags & BATTLE_TYPE_DOUBLE
+					&& gBattlerPartyIndexes[2] == gBattleStruct->expGetterMonId
+					&& MOVE_IS_PERMANENT(2, movePosition))
+				{
+					RemoveBattleMonPPBonus(&gBattleMons[2], movePosition);
+					SetBattleMonMoveSlot(&gBattleMons[2], gMoveToLearn, movePosition);
                 }
             }
         }
@@ -6782,12 +6781,37 @@ static u32 GetTrainerMoneyToGive(u16 trainerId)
 
 static void Cmd_getmoneyreward(void)
 {
-    u32 moneyReward = GetTrainerMoneyToGive(gTrainerBattleOpponent_A);
-    if (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS)
-        moneyReward += GetTrainerMoneyToGive(gTrainerBattleOpponent_B);
+    u32 money;
 
-    AddMoney(&gSaveBlock1Ptr->money, moneyReward);
-    PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff1, 5, moneyReward);
+    if (gBattleOutcome == B_OUTCOME_WON)
+	{
+		money = GetTrainerMoneyToGive(gTrainerBattleOpponent_A);
+		if (gBattleTypeFlags & BATTLE_TYPE_TWO_OPPONENTS)
+			money += GetTrainerMoneyToGive(gTrainerBattleOpponent_B);
+		AddMoney(&gSaveBlock1Ptr->money, money);
+	}
+	else
+	{
+		s32 i, count;
+		for (i = 0; i < PARTY_SIZE; i++)
+		{
+			if (GetMonData(&gPlayerParty[i], MON_DATA_SPECIES2) != SPECIES_NONE
+				&& GetMonData(&gPlayerParty[i], MON_DATA_SPECIES2) != SPECIES_EGG)
+			{
+				if (GetMonData(&gPlayerParty[i], MON_DATA_LEVEL) > gMaxPartyLevel)
+					gMaxPartyLevel = GetMonData(&gPlayerParty[i], MON_DATA_LEVEL);
+			}
+		}
+		for (count = 0, i = 0; i < ARRAY_COUNT(sBadgeFlags); i++)
+		{
+			if (FlagGet(sBadgeFlags[i]) == TRUE)
+				++count;
+		}
+		money = sWhiteOutBadgeMoney[count] * gMaxPartyLevel;
+		RemoveMoney(&gSaveBlock1Ptr->money, money);
+	}
+
+    PREPARE_WORD_NUMBER_BUFFER(gBattleTextBuff1, 5, money);
 
     gBattlescriptCurrInstr++;
 }
@@ -13195,6 +13219,16 @@ static void Cmd_pickup(void)
                 heldItem = GetBattlePyramidPickupItemId();
                 SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
             }
+			else if (species == SPECIES_SHUCKLE
+				&& heldItem >= FIRST_BERRY_INDEX
+				&& heldItem <= LAST_BERRY_INDEX)
+			{
+				if (!(Random() % 16))
+				{
+					heldItem = ITEM_BERRY_JUICE;
+					SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+				}
+			}
             #if (defined ITEM_HONEY)
             else if (ability == ABILITY_HONEY_GATHER
                 && species != 0
@@ -13248,6 +13282,16 @@ static void Cmd_pickup(void)
                     }
                 }
             }
+			else if (species == SPECIES_SHUCKLE
+				&& heldItem >= FIRST_BERRY_INDEX
+				&& heldItem <= LAST_BERRY_INDEX)
+			{
+				if (!(Random() % 16))
+				{
+					heldItem = ITEM_BERRY_JUICE;
+					SetMonData(&gPlayerParty[i], MON_DATA_HELD_ITEM, &heldItem);
+				}
+			}
             #if (defined ITEM_HONEY)
             else if (ability == ABILITY_HONEY_GATHER
                 && species != 0
@@ -13884,6 +13928,11 @@ static void Cmd_trysetcaughtmondexflags(void)
     {
         gBattlescriptCurrInstr = T1_READ_PTR(gBattlescriptCurrInstr + 1);
     }
+	else if (!FlagGet(FLAG_SYS_POKEDEX_GET))
+	{
+		HandleSetPokedexFlag(SpeciesToNationalPokedexNum(species), FLAG_SET_CAUGHT, personality);  
+		gBattlescriptCurrInstr = T1_READ_PTR(gBattlescriptCurrInstr + 1);
+	}
     else
     {
         HandleSetPokedexFlag(SpeciesToNationalPokedexNum(species), FLAG_SET_CAUGHT, personality);
