@@ -36,6 +36,7 @@ This is a Rom Hack of Emerald, featuring a new region, updated dex and features,
 * Not needing to water on rainy routes
 * Enable the Reset RTC Feature (removed ability to get to Berry Update Program)
 * Change Starting Money to Gen 8
+* HM Items
 
 # Added Repos:
 
