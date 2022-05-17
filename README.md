@@ -37,6 +37,7 @@ This is a Rom Hack of Emerald, featuring a new region, updated dex and features,
 * Enable the Reset RTC Feature (removed ability to get to Berry Update Program)
 * Change Starting Money to Gen 8
 * HM Items
+* Move Relearner as an option in the Pokémon Party Screen
 
 # Added Repos:
 

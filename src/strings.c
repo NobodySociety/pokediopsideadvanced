@@ -1826,7 +1826,7 @@ const u8 gText_PokeBalls[] = _("POKé BALLS");
 const u8 gText_Berry[] = _("BERRY");
 const u8 gText_Berries[] = _("BERRIES");
 const u8 gText_Nickname[] = _("Nickname");
-
+const u8 gText_Moves_Menu[] = _("Change Moves");
 
 //HGSS_Ui PokedexPlus
 const u8 gText_Stats_Buttons[]  = _("{A_BUTTON}TOGGLE   {DPAD_UPDOWN}MOVES");
