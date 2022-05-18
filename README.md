@@ -40,6 +40,7 @@ This is a Rom Hack of Emerald, featuring a new region, updated dex and features,
 * Move Relearner as an option in the Pokémon Party Screen
 * Power item and Destiny Knot breeding
 * Shortcut to run quickly from wild battles
+* Swap party screen slots using Select
 
 # Added Repos:
 
