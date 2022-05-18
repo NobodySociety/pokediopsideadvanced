@@ -38,6 +38,7 @@ This is a Rom Hack of Emerald, featuring a new region, updated dex and features,
 * Change Starting Money to Gen 8
 * HM Items
 * Move Relearner as an option in the Pokémon Party Screen
+* Power item and Destiny Knot breeding
 
 # Added Repos:
 
