@@ -41,6 +41,7 @@ This is a Rom Hack of Emerald, featuring a new region, updated dex and features,
 * Power item and Destiny Knot breeding
 * Shortcut to run quickly from wild battles
 * Swap party screen slots using Select
+* OW Headbutt
 
 # Added Repos:
 

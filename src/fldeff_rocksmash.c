@@ -54,7 +54,7 @@ u8 CreateFieldMoveTask(void)
 static void Task_DoFieldMove_Init(u8 taskId)
 {
     if (FieldEffectActiveListContains(FLDEFF_USE_DIG) || FieldEffectActiveListContains(FLDEFF_USE_TELEPORT)
-		|| FieldEffectActiveListContains(FLDEFF_SWEET_SCENT))
+		|| FieldEffectActiveListContains(FLDEFF_SWEET_SCENT) || FieldEffectActiveListContains(FLDEFF_USE_HEADBUTT))
 	{
 		u8 objEventId;
 
