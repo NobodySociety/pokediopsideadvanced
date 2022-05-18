@@ -42,6 +42,7 @@ This is a Rom Hack of Emerald, featuring a new region, updated dex and features,
 * Shortcut to run quickly from wild battles
 * Swap party screen slots using Select
 * OW Headbutt
+* Wrong Save Type Error Screen
 
 # Added Repos:
 
